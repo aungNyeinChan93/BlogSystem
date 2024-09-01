@@ -23,6 +23,17 @@
                     </div>
                 @endsession
             </div>
+            <div class="row">
+                <div class="col-4">
+                    <form action="{{route("listPage")}}" method="GET">
+                        @csrf
+                        <div class="input-group mb-3">
+                            <input value="{{request()->search_key}}" type="text" name="search_key" class="form-control" placeholder="Search" aria-label="Recipient's username" aria-describedby="button-addon2">
+                            <button class="btn btn-outline-info" type="submit" id="button-addon2">Search</button>
+                          </div>
+                    </form>
+                </div>
+            </div>
             <div class="col-4">
                 <form action="{{ route('create') }}" method="POST" class="my-2" enctype="multipart/form-data">
                     @csrf
@@ -79,7 +90,7 @@
                                     <a href="{{ route('delete', $blog->id) }}" class="btn btn-sm btn-danger me-2"> Delete</a>
                                 </div>
                             </div>
-                            <div class="col-4">
+                            <div class="col-4 my-auto">
                                 <img src="{{ asset("/blogImage/$blog->image") }}" alt="test"
                                     class=" img-thumbnail w-100 rounded ">
                             </div>

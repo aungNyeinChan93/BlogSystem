@@ -13,6 +13,7 @@
     <h3 class=" text-info text-center bg-gray-100 p-2 rounded">Blog Project</h3>
 
     @yield('blog')
+    @include('sweetalert::alert')
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 

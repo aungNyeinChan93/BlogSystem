@@ -9,8 +9,8 @@
                     <div class="card-body">
                       <h5 class="card-title">{{$blog->title}}</h5>
                       <p class="card-text">{{$blog->description}}</p>
-                      <small class=" d-block">{{$blog->created_at}}</small>
-                      <a href="/" class="btn btn-primary my-2">back</a>
+                      <small class=" d-block">{{$blog->created_at->format("j-Y-F")}}</small>
+                      <a href="{{route("listPage")}}" class="btn btn-primary my-2">back</a>
                     </div>
                   </div>
             </div>

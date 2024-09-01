@@ -5,21 +5,37 @@ namespace App\Http\Controllers;
 use App\Models\Blog;
 use Illuminate\Http\Request;
 use App\Http\Requests\BlogRequest;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class BlogController extends Controller
 {
     # list page -> /list
     public function list()
     {
-        $blogs = Blog::orderBy("id", "desc")->paginate(10);
+        // dd(request()->search_key);
+
+        if (request()->search_key == "") {
+            $blogs = Blog::orderBy("id", "desc")->paginate(10);
+        } else {
+            $blogs = Blog::orwhere("title", "like", "%" . request("search_key") . "%")
+                    ->orWhere("description","like","%".request("search_key")."%")
+                    ->orWhere("writer","like","%".request()->search_key."%")
+                    ->orderBy("id", "desc")->paginate(10);
+        }
         return view("blog.list", compact("blogs"));
+
+        # Can use -> when()
+        // $blogs = Blog::when(request("search_key"), function ($query) {
+        //     $query->whereAny(["title","description","writer"], "like", "%" . request("search_key") . "%");
+        // })->orderBy("id", "desc")->paginate(10);
+        // return view("blog.list", compact("blogs"));
     }
 
     # create data & validation
     public function create(BlogRequest $blogRequest, Blog $blog)
     {
         if ($blogRequest->hasFile("image")) {
-            $file = $blogRequest->file("image");
+            $file = $blogRequest->file("image");  //$_FILES["image];
             $fileName = uniqid() . $file->getClientOriginalName();
             $file->move(public_path() . "/blogImage/", $fileName);
         }
@@ -29,7 +45,8 @@ class BlogController extends Controller
             "writer" => $blogRequest->writer,
             "image" => $fileName,  //$blogRequest->file("image)->getClientOriginalName();
         ]);
-        return back()->with(["create" => "Blog create Success!"]);
+        Alert::success('Blog created', 'create Success!');
+        return back();
     }
 
     public function delete(Blog $blog)
@@ -52,21 +69,41 @@ class BlogController extends Controller
         return view("blog.edit", compact("blog"));
     }
 
-    public function update(BlogRequest $blogRequest, Blog $blog)
+    public function update(Request $request, Blog $blog)
     {
+        // $validateRequest = $request->validated();
+        $this->updateValidation($request);
         $oldImage = $blog->image;
-        if (file_exists(public_path("/blogImage/$oldImage"))) {
-            unlink(public_path("/blogImage/$oldImage"));
+        if ($request->hasFile("image")) {
+            if (file_exists(public_path("/blogImage/$oldImage"))) {
+                unlink(public_path("/blogImage/$oldImage"));
+            }
+            $newFileName = uniqid() . $request->file("image")->getClientOriginalName();
+            $request->file("image")->move(public_path() . "/blogImage/", $newFileName);
+            $blog->update([
+                "title" => $request->title,
+                "description" => $request->description,
+                "writer" => $request->writer,
+                "image" => $newFileName,
+            ]);
+        } else {
+            $blog->update([
+                "title" => $request->title,
+                "description" => $request->description,
+                "writer" => $request->writer,
+            ]);
         }
-        $fileName = uniqid() . $blogRequest->file("image")->getClientOriginalName();
-        $blogRequest->file("image")->move(public_path() . "/blogImage/", $fileName);
-        $blog->update([
-            "title" => $blogRequest->title,
-            "description" => $blogRequest->title,
-            "writer" => $blogRequest->title,
-            "image" => $fileName,
-        ]);
+        return to_route("listPage")->with("update", "Update success!");
+    }
 
-        return to_route("listPage")->with("update","Update success!");
+    protected function updateValidation($request)
+    {
+        $validateData = [
+            "title" => "required ",
+            "description" => "required",
+            "writer" => "required",
+            "image" => "mimes:jpj,png,svg"
+        ];
+        $request->validate($validateData);
     }
 }

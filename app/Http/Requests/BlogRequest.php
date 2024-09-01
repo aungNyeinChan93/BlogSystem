@@ -23,7 +23,7 @@ class BlogRequest extends FormRequest
     {
         return [
             //
-            "title"=>"required",
+            "title"=>"required|unique:blogs,title",
             "description"=>"required",
             "image"=>"required",
             "writer"=>"required",
